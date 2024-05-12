@@ -1,0 +1,1 @@
+# gitleaks-pipe.py
