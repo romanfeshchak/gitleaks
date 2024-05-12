@@ -1,6 +1,3 @@
-# gitleaks-pipe.py
-
-
 # Gitleaks pre-commit hook
 
 This script sets up a pre-commit hook for Git that automatically checks for secrets in your code using Gitleaks.
@@ -34,7 +31,7 @@ python3 pipegitleaks.py
 
 After the installation, the pre-commit hook will automatically run before each commit. If any secrets or sensitive information are detected by Gitleaks, the commit will be rejected and an error message will be displayed.
 
-To disable the pre-commit hook, you can set the gitleaks.enabled configuration option to false:
+To disable the pre-commit hook, you can set the gitleaks.enabled configuration option to false and rerun python script:
 
 ```shell
 git config gitleaks.enabled false
