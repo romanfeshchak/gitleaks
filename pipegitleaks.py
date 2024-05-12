@@ -37,21 +37,34 @@ def setup_git_hooks():
     git_hooks_dir = os.path.join(current_dir, '.git', 'hooks')
     pre_commit_hook_path = os.path.join(git_hooks_dir, 'pre-commit')
     gitleaks_path = os.path.join(current_dir, 'gitleaks')
-    if os.path.exists(gitleaks_path):
-        gitleaks_cmd = f'set -e\n{gitleaks_path} protect --staged --verbose\n'
-        with open(pre_commit_hook_path, 'w') as hook_file:
-            hook_file.write(gitleaks_cmd)
-        os.chmod(pre_commit_hook_path, 0o755)
-        print("Pre-commit hook set up successfully.")
+    gitleaks_enabled = subprocess.run(['git', 'config', '--get', 'gitleaks.enabled'], capture_output=True, text=True).stdout.strip()
+    if gitleaks_enabled.lower() == 'false':
+        if os.path.exists(pre_commit_hook_path):
+            os.remove(pre_commit_hook_path)
+            print("Pre-commit hook removed.")
+        else:
+            print("Pre-commit hook does not exist.")
     else:
-        print("Gitleaks binary not found.")
+        if os.path.exists(gitleaks_path):
+            gitleaks_cmd = f'set -e\n{gitleaks_path} protect --staged --verbose\n'
+            with open(pre_commit_hook_path, 'w') as hook_file:
+                hook_file.write(gitleaks_cmd)
+            os.chmod(pre_commit_hook_path, 0o755)
+            print("Pre-commit hook set up successfully.")
+        else:
+            print("Gitleaks binary not found.")
 
 def check_repository_for_secrets():
-    gitleaks_path = os.path.join(os.getcwd(), 'gitleaks')
-    if os.path.exists(gitleaks_path):
-        subprocess.run([gitleaks_path, 'protect', '--staged', '--source', '.', '--verbose'], cwd=os.getcwd())
+    gitleaks_enabled = subprocess.run(['git', 'config', '--get', 'gitleaks.enabled'], capture_output=True, text=True).stdout.strip()
+    if gitleaks_enabled.lower() != 'false':
+        gitleaks_path = os.path.join(os.getcwd(), 'gitleaks')
+        if os.path.exists(gitleaks_path):
+            subprocess.run([gitleaks_path, 'protect', '--staged', '--source', '.', '--verbose'], cwd=os.getcwd())
+        else:
+            print("Gitleaks binary not found.")
     else:
-        print("Gitleaks binary not found.")
+        print("Gitleaks is disabled.")
+
 def main():
     os_type = platform.system()
 
