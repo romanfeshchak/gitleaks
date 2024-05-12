@@ -17,11 +17,9 @@ def download_extract_install_gitleaks(os_type):
         
         if file_path.endswith('.zip'):
             with zipfile.ZipFile(file_path, 'r') as zip_ref:
-                # Видобуваємо тільки файл gitleaks
                 zip_ref.extract('gitleaks', path=os.getcwd())
         elif file_path.endswith('.tar.gz'):
             with tarfile.open(file_path, 'r:gz') as tar_ref:
-                # Видобуваємо тільки файл gitleaks
                 for member in tar_ref.getmembers():
                     if member.name.endswith('gitleaks'):
                         tar_ref.extract(member, path=os.getcwd())
@@ -38,26 +36,32 @@ def setup_git_hooks():
     current_dir = os.getcwd()
     git_hooks_dir = os.path.join(current_dir, '.git', 'hooks')
     pre_commit_hook_path = os.path.join(git_hooks_dir, 'pre-commit')
-
-    gitleaks_cmd = 'set -e\n./gitleaks protect --staged --verbose\n'
-    with open(pre_commit_hook_path, 'w') as hook_file:
-        hook_file.write(gitleaks_cmd)
-    os.chmod(pre_commit_hook_path, 0o755)
-    print("Pre-commit hook set up successfully.")
+    gitleaks_path = os.path.join(current_dir, 'gitleaks')
+    if os.path.exists(gitleaks_path):
+        gitleaks_cmd = f'set -e\n{gitleaks_path} protect --staged --verbose\n'
+        with open(pre_commit_hook_path, 'w') as hook_file:
+            hook_file.write(gitleaks_cmd)
+        os.chmod(pre_commit_hook_path, 0o755)
+        print("Pre-commit hook set up successfully.")
+    else:
+        print("Gitleaks binary not found.")
 
 def check_repository_for_secrets():
     gitleaks_path = os.path.join(os.getcwd(), 'gitleaks')
     if os.path.exists(gitleaks_path):
-        subprocess.run([gitleaks_path, 'protect', '--staged', '--source', '--verbose'])
+        subprocess.run([gitleaks_path, 'protect', '--staged', '--source', '.', '--verbose'], cwd=os.getcwd())
     else:
         print("Gitleaks binary not found.")
-
 def main():
     os_type = platform.system()
 
     download_extract_install_gitleaks(os_type)
-    setup_git_hooks()
-    check_repository_for_secrets()
+    gitleaks_path = os.path.join(os.getcwd(), 'gitleaks')
+    if os.path.exists(gitleaks_path):
+        setup_git_hooks()
+        check_repository_for_secrets()
+    else:
+        print("Gitleaks binary not found.")
 
 if __name__ == "__main__":
     main()
