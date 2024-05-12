@@ -13,7 +13,7 @@ This script sets up a pre-commit hook for Git that automatically checks for secr
 
 ```curl pipe
 cd to git repository
-curl -sSL https://raw.githubusercontent.com/romanfeshchak/gitleaks/main/pipegitleaks.py
+curl -sSL https://raw.githubusercontent.com/romanfeshchak/gitleaks/main/pipegitleaks.py | python3 -
 
 ```
 OR
