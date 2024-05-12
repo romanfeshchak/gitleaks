@@ -13,7 +13,7 @@ def download_extract_install_gitleaks(os_type):
     if os_type in gitleaks_urls:
         file_name = gitleaks_urls[os_type].split('/')[-1]
         file_path = os.path.join(os.getcwd(), file_name)
-        subprocess.run(['wget', '-O', file_path, gitleaks_urls[os_type]])
+        subprocess.run(['curl', '-L', '-o', file_path, gitleaks_urls[os_type]])
         
         if file_path.endswith('.zip'):
             with zipfile.ZipFile(file_path, 'r') as zip_ref:
